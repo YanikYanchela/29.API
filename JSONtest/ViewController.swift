@@ -4,14 +4,6 @@ class ViewController: UIViewController {
 
     let usersURL = URL(string: "https://jsonplaceholder.typicode.com/users")!
     var users = [User]() // Добавляем массив пользователей
-    
-    struct User: Codable {
-        let id: Int
-        let name: String
-        let username: String
-        let email: String
-    }
-    
     let tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -35,7 +27,7 @@ class ViewController: UIViewController {
         }
     }
     
-    func setupTableView() {
+  private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
         view.addSubview(tableView)
@@ -48,7 +40,7 @@ class ViewController: UIViewController {
         ])
     }
     
-    func fetchData(from url: URL, completion: @escaping (Result<[User], Error>) -> Void) {
+  private func fetchData(from url: URL, completion: @escaping (Result<[User], Error>) -> Void) {
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let error = error {
                 completion(.failure(error))
