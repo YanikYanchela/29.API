@@ -1,7 +1,7 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    
     let usersURL = URL(string: "https://jsonplaceholder.typicode.com/users")!
     var users = [User]() // Добавляем массив пользователей
     let tableView: UITableView = {
@@ -14,20 +14,23 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         setupTableView()
         
-        fetchData(from: usersURL) { result in
-            switch result {
-            case .success(let users):
-                self.users = users // Сохраняем полученных пользователей
-                DispatchQueue.main.async {
-                    self.tableView.reloadData() // Обновляем таблицу после загрузки данных
+        DispatchQueue.global().async {
+            self.fetchData(from: self.usersURL) { result in
+                switch result {
+                case .success(let users):
+                    self.users = users // Сохраняем полученных пользователей
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData() // Обновляем таблицу после загрузки данных
+                    }
+                case .failure(let error):
+                    print("Error fetching data: \(error)")
                 }
-            case .failure(let error):
-                print("Error fetching data: \(error)")
             }
         }
+        
     }
     
-  private func setupTableView() {
+    private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
         view.addSubview(tableView)
@@ -40,7 +43,13 @@ class ViewController: UIViewController {
         ])
     }
     
-  private func fetchData(from url: URL, completion: @escaping (Result<[User], Error>) -> Void) {
+    private func fetchData(from url: URL, completion: @escaping (Result<[User], Error>) -> Void) {
+        if Thread.isMainThread {
+            print("Мы находимся на главном потоке при выполнении fetchData")
+        } else {
+            print("Мы находимся на фоновом потоке при выполнении fetchData")
+        }
+        
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let error = error {
                 completion(.failure(error))
@@ -74,9 +83,9 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let user = users[indexPath.row] // Получаем пользователя по индексу
         
-        // Настройка меток для отображения информации о пользователе в ячейке
         cell.textLabel?.text = user.name
-
+        
         return cell
     }
 }
+
